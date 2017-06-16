@@ -81,7 +81,8 @@ module.exports = {
           {
             loader: 'url-loader',
             options: {
-              limit: 10000
+              limit: 10000,
+              name: "images/[name].[hash:8].[ext]"
             }
           }
         ]
@@ -107,13 +108,24 @@ module.exports = {
   performance: {
     hints: false
   },
-  devtool: '#eval-source-map'
+  // devtool: '#eval-source-map'
 }
 
-if (process.env.NODE_ENV === 'production') {
+console.log('环境--->', process.env.NODE_ENV);
+if (process.env.NODE_ENV === 'development') {
+  // 当环境为开发环境时为process.env.NODE_ENV设置值为development
+  module.exports.plugins = (module.exports.plugins || []).concat([
+    new webpack.DefinePlugin({
+      'process.env': {
+        NODE_ENV: '"development"'
+      }
+    })
+  ])
+} else if (process.env.NODE_ENV === 'production') {
   module.exports.devtool = '#source-map'
   // http://vue-loader.vuejs.org/en/workflow/production.html
   module.exports.plugins = (module.exports.plugins || []).concat([
+    // 当环境为线上环境时为process.env.NODE_ENV设置值为development
     new webpack.DefinePlugin({
       'process.env': {
         NODE_ENV: '"production"'
