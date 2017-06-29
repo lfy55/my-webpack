@@ -1,5 +1,7 @@
 {
   "presets": [
     ["env", { "modules": false }]
-  ]
+  ],
+  // 增加对...语法的支持
+  "plugins": ["transform-object-rest-spread"]
 }

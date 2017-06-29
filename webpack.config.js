@@ -6,6 +6,23 @@ var configEntry = {
   'page2': './src/pages/app2.js',
 };
 
+/*
+var pluginHTML = [];
+configEntry.vendors = ['vue', 'vuex', './src/lib/juqery.js'];
+pluginHTML.push(new webpack.optimize.CommonsChunkPlugin(
+  name: ['vendors'] //'manifest'可以解决每次build引起的vendors包hask值变化的问题，但是会产生一个多余的manifest.js文件
+));
+
+// 多页面应用编译html的方法
+pluginHTML.push(new htmlWebpackPlugin(
+  filename: {name},
+  template: {src},
+  inject: 'position',
+  title: {name}
+  chunks: [name, vendors]
+));
+ */
+
 module.exports = {
   // 配置页面入口js文件
   entry: configEntry,
@@ -17,6 +34,7 @@ module.exports = {
     // 入口js的打包输出文件名
     filename: '[name]/entry.js'
   },
+  // plugins: pluginHTML
   module: {
     /*
     配置各种类型文件的加载器, 称之为loader
@@ -96,14 +114,17 @@ module.exports = {
       // }
     ]
   },
+  // 影响模块的解决方案
   resolve: {
     alias: {
-      'vue$': 'vue/dist/vue.esm.js'
+      'vue$': 'vue/dist/vue.esm.js',
+      '~': path.resolve(__dirname, 'src')
     }
   },
   devServer: {
     historyApiFallback: true,
     noInfo: true
+    // 可以在此处配置proxy解决跨域问题
   },
   performance: {
     hints: false
