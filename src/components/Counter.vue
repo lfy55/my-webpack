@@ -16,11 +16,13 @@ export default {
   computed: mapGetters([
     'evenOrOdd'
   ]),
-  methods: mapActions([
-    'increment',
-    'decrement',
-    'incrementIfOdd',
-    'incrementAsync'
-  ])
+  methods: {
+    ...mapActions([
+      'increment',
+      'decrement',
+      'incrementIfOdd',
+      'incrementAsync'
+    ])
+  }
 }
 </script>

@@ -1,40 +1,53 @@
 var path = require('path')
 var webpack = require('webpack')
+var htmlWebpackPlugin = require('html-webpack-plugin')
 
-var configEntry = {
-  'page1': './src/pages/app.js',
-  'page2': './src/pages/app2.js',
-};
+var templatePath = path.resolve(__dirname, 'src/html/index.html')
 
-/*
-var pluginHTML = [];
-configEntry.vendors = ['vue', 'vuex', './src/lib/juqery.js'];
-pluginHTML.push(new webpack.optimize.CommonsChunkPlugin(
-  name: ['vendors'] //'manifest'可以解决每次build引起的vendors包hask值变化的问题，但是会产生一个多余的manifest.js文件
-));
+var pages = [
+  {
+    name: 'page1',
+    entryPath: './src/pages/app.js',
+    title: '页面一',
+  }, {
+    name: 'page2',
+    entryPath: './src/pages/app2.js',
+    title: '页面二',
+  }
+]
+
+var entrys = {}, pluginsHTML = []
+
+entrys.vendors = ['vue', 'vuex']
+pluginsHTML.push(new webpack.optimize.CommonsChunkPlugin({
+  name: ['vendors'] // 增加'manifest'可以解决每次build引起的vendors包hask值变化的问题，但是会产生一个多余的manifest.js文件
+}));
 
 // 多页面应用编译html的方法
-pluginHTML.push(new htmlWebpackPlugin(
-  filename: {name},
-  template: {src},
-  inject: 'position',
-  title: {name}
-  chunks: [name, vendors]
-));
- */
+pages.forEach(item => {
+  entrys[item.name] = item.entryPath
+  pluginsHTML.push(new htmlWebpackPlugin({
+    filename: item.name + '.html',
+    template: templatePath,
+    inject: 'body',
+    title: item.title,
+    chunks: [item.name, 'vendors']
+  }))
+})
 
 module.exports = {
   // 配置页面入口js文件
-  entry: configEntry,
+  entry: entrys,
   // 配置打包输出相关
   output: {
     // 打包输出目录
-    path: path.resolve(__dirname, './dist'),
-    publicPath: '/dist/',
+    path: path.resolve(__dirname, 'dist'),
+    publicPath: '/dist/', //process.env.NODE_ENV === 'development' ? '/dist/' : './',
     // 入口js的打包输出文件名
-    filename: '[name]/entry.js'
+    filename: 'js/[name]-[hash:8].js',
+    chunkFilename: 'js/[name]-[hash:8].js',
   },
-  // plugins: pluginHTML
+  plugins: pluginsHTML,
   module: {
     /*
     配置各种类型文件的加载器, 称之为loader
@@ -133,6 +146,10 @@ module.exports = {
 }
 
 console.log('环境--->', process.env.NODE_ENV);
+
+// 解决 dev 和 build 的warning
+process.noDeprecation = true
+
 if (process.env.NODE_ENV === 'development') {
   // 当环境为开发环境时为process.env.NODE_ENV设置值为development
   module.exports.plugins = (module.exports.plugins || []).concat([
@@ -143,7 +160,8 @@ if (process.env.NODE_ENV === 'development') {
     })
   ])
 } else if (process.env.NODE_ENV === 'production') {
-  module.exports.devtool = '#source-map'
+  // 控制是否输出 .map 文件
+  // module.exports.devtool = '#source-map'
   // http://vue-loader.vuejs.org/en/workflow/production.html
   module.exports.plugins = (module.exports.plugins || []).concat([
     // 当环境为线上环境时为process.env.NODE_ENV设置值为development
@@ -153,9 +171,12 @@ if (process.env.NODE_ENV === 'development') {
       }
     }),
     new webpack.optimize.UglifyJsPlugin({
-      sourceMap: true,
+      sourceMap: false,
+      beautify: true,
+      comments: true,
       compress: {
-        warnings: false
+        warnings: false,
+        drop_console: true,
       }
     }),
     new webpack.LoaderOptionsPlugin({
