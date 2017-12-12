@@ -1,7 +1,13 @@
 {
   "presets": [
-    ["env", { "modules": false }]
+    ["env", {
+      "modules": false
+    }],
+    "stage-2"
   ],
-  // 增加对...语法的支持
-  "plugins": ["transform-object-rest-spread"]
+  "plugins": ["transform-runtime"],
+  "env": {
+    "test": {
+      "presets": ["env", "stage-2"]    }
+  }
 }
