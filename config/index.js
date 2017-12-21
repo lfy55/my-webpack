@@ -3,6 +3,7 @@
 // see http://vuejs-templates.github.io/webpack for documentation.
 
 const path = require('path')
+const webpack = require('webpack')
 let htmlWebpackPlugin = require('html-webpack-plugin')
 
 let pages = require('./pages.js'),
@@ -25,7 +26,20 @@ pages.forEach(item => {
     template: './src/html/index.html',
     inject: 'body',
     title: item.title,
-    chunks: ['vendor', `${item.name}.vendor`, 'configs', item.name]
+    chunks: [`${item.name}-vendor`, `${item.name}.vendor`, 'configs', item.name],
+    chunksSortMode: 'dependency', // 根据文件依赖顺序来决定 script 的引用顺序
+  }))
+
+  // 为每一个页面单独打包用到的 node_modules 中的库
+  pluginHtml.push(new webpack.optimize.CommonsChunkPlugin({
+    name: item.name + '-vendor',
+    minChunks: function (module) {
+      return (
+        module.resource &&
+        /\.js$/.test(module.resource) &&
+        module.resource.indexOf(path.join(__dirname, '../node_modules')) === 0
+      )
+    },
   }))
 })
 
@@ -42,7 +56,16 @@ module.exports = {
     // Paths
     assetsSubDirectory: 'static',
     assetsPublicPath: '/',
-    proxyTable: {},
+    proxyTable: {
+      '/interface': {
+        target: 'http://localhost',
+        pathRewrite: {
+          '^/interface': '/interface'
+        },
+        changeOrigin: true,
+        secure: false,
+      }
+    },
 
     // Various Dev Server settings
     host: 'localhost', // can be overwritten by process.env.HOST

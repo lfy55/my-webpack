@@ -33,10 +33,10 @@ const webpackConfig = merge(baseWebpackConfig, {
     }),
     // UglifyJs do not support ES6+, you can also use babel-minify for better treeshaking: https://github.com/babel/minify
     new webpack.optimize.UglifyJsPlugin({
-      // 最紧凑的输出
+      // 不紧凑的输出
       beautify: true,
-      // 删除所有的注释
-      comments: false,
+      // 不删除所有的注释
+      comments: true,
       compress: {
         // 在UglifyJs删除没有用到的代码时不输出警告  
         warnings: false,
@@ -91,19 +91,20 @@ const webpackConfig = merge(baseWebpackConfig, {
     // enable scope hoisting
     // new webpack.optimize.ModuleConcatenationPlugin(),
     // split vendor js into its own file
-    new webpack.optimize.CommonsChunkPlugin({
-      name: 'vendor',
-      minChunks: function (module) {
-        // any required modules inside node_modules are extracted to vendor
-        return (
-          module.resource &&
-          /\.js$/.test(module.resource) &&
-          module.resource.indexOf(
-            path.join(__dirname, '../node_modules')
-          ) === 0
-        )
-      }
-    }),
+    // 多页情况注释vendor， 改为每个页面一个vendor
+    // new webpack.optimize.CommonsChunkPlugin({
+    //   name: 'vendor',
+    //   minChunks: function (module) {
+    //     // any required modules inside node_modules are extracted to vendor
+    //     return (
+    //       module.resource &&
+    //       /\.js$/.test(module.resource) &&
+    //       module.resource.indexOf(
+    //         path.join(__dirname, '../node_modules')
+    //       ) === 0
+    //     )
+    //   }
+    // }),
     // extract webpack runtime and module manifest to its own file in order to
     // prevent vendor hash from being updated whenever app bundle is updated
     // new webpack.optimize.CommonsChunkPlugin({

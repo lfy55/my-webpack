@@ -4,6 +4,8 @@ const semver = require('semver')
 const packageConfig = require('../package.json')
 const shell = require('shelljs')
 function exec (cmd) {
+  // 此处可能导致命令行假死
+  // 如果发生假死可以直接返回 npm 版本号即可
   return require('child_process').execSync(cmd).toString().trim()
 }
 
