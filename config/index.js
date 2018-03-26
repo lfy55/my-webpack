@@ -13,7 +13,27 @@ let pages = require('./pages.js'),
   },
   pluginHtml = []
 
+// 所有页面公用的 node_modules 中的库
+pluginHtml.push(new webpack.optimize.CommonsChunkPlugin({
+  name: 'all-vendor',
+  minChunks: 2,
+  chunks: pages.map(item => item.name)
+}))
+
 pages.forEach(item => {
+  // 为每一个页面单独打包用到的 node_modules 中的库
+  pluginHtml.push(new webpack.optimize.CommonsChunkPlugin({
+    name: item.name + '-vendor',
+    minChunks: function (module) {
+      return (
+        module.resource &&
+        /\.js$/.test(module.resource) &&
+        module.resource.indexOf(path.join(__dirname, '../node_modules')) === 0
+      )
+    },
+    chunks: [item.name]
+  }))
+
   item.entryJS = `./src/${item.entryJS}`
   entry[item.name] = item.entryJS
   if (item.myVendor || myVendor.length > 0) {
@@ -26,20 +46,8 @@ pages.forEach(item => {
     template: './src/html/index.html',
     inject: 'body',
     title: item.title,
-    chunks: [`${item.name}-vendor`, `${item.name}.vendor`, 'configs', item.name],
-    chunksSortMode: 'dependency', // 根据文件依赖顺序来决定 script 的引用顺序
-  }))
-
-  // 为每一个页面单独打包用到的 node_modules 中的库
-  pluginHtml.push(new webpack.optimize.CommonsChunkPlugin({
-    name: item.name + '-vendor',
-    minChunks: function (module) {
-      return (
-        module.resource &&
-        /\.js$/.test(module.resource) &&
-        module.resource.indexOf(path.join(__dirname, '../node_modules')) === 0
-      )
-    },
+    chunks: [item.name, 'configs', `${item.name}.vendor`, `${item.name}-vendor`, 'all-vendor'],
+    // chunksSortMode: 'dependency', // 根据文件依赖顺序来决定 script 的引用顺序
   }))
 })
 
